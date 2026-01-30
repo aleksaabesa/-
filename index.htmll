@@ -1,0 +1,4 @@
+<div id="install-instruction" style="background: #222; padding: 15px; border-top: 2px solid red; position: fixed; bottom: 0; width: 100%; z-index: 100;">
+    <p>📥 გადმოწერე აპი: დააჭირე <b>Share</b>-ს და მერე <b>'Add to Home Screen'</b></p>
+    <button onclick="document.getElementById('install-instruction').style.display='none'">გავგები</button>
+</div>
