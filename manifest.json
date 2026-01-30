@@ -1,0 +1,19 @@
+{
+  "short_name": "გაჩითე",
+  "name": "გაჩითე - Live შოუ",
+  "description": "ინტერაქციული ლაივ ვიქტორინა",
+  "icons": [
+    {
+      "src": "image.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#ff0000",
+  "scope": "./"
+}
