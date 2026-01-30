@@ -1,0 +1,18 @@
+{
+  "short_name": "გაჩითე",
+  "name": "გაჩითე - Live ვიქტორინა",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2991/2991148.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#1a1a1a",
+  "display": "standalone",
+  "scope": "./",
+  "theme_color": "#ff0000",
+  "description": "მოაწყვე ლაივ შოუები და დასვი კითხვები რეალურ დროში!"
+}
