@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>გაჩითე</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; margin: 0; }
+        .header { background: #ff0000; padding: 20px; font-size: 24px; font-weight: bold; }
+        .container { padding: 20px; }
+        input, button { display: block; width: 80%; margin: 10px auto; padding: 10px; border-radius: 5px; border: none; }
+        button { background: #ff0000; color: white; cursor: pointer; font-weight: bold; }
+        .hidden { display: none; }
+        .quiz-card { background: #333; padding: 20px; border-radius: 15px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">გაჩითე</div>
+
+    <div id="login-section" class="container">
+        <h3>შესვლა</h3>
+        <input type="email" id="email" placeholder="იმეილი">
+        <button onclick="login()">შესვლა</button>
+    </div>
+
+    <div id="admin-panel" class="container hidden">
+        <h3>ადმინ პანელი (LIVE)</h3>
+        <input type="text" id="q-text" placeholder="კითხვის ტექსტი">
+        <input type="text" id="ans1" placeholder="სწორი პასუხი">
+        <input type="text" id="ans2" placeholder="არასწორი 1">
+        <input type="text" id="ans3" placeholder="არასწორი 2">
+        <button onclick="sendQuestion()">გაგზავნა ხალხთან</button>
+    </div>
+
+    <div id="user-view" class="container hidden">
+        <div id="live-stream" style="background: #000; height: 200px; margin-bottom: 10px;">
+            [აქ გამოჩნდება ლაივი]
+        </div>
+        <div id="active-question" class="quiz-card hidden">
+            <h2 id="display-q"></h2>
+            <div id="answer-buttons"></div>
+        </div>
+    </div>
+
+    <script>
+        function login() {
+            const email = document.getElementById('email').value;
+            document.getElementById('login-section').classList.add('hidden');
+            
+            if(email === 'gachite@gmail.com') {
+                document.getElementById('admin-panel').classList.remove('hidden');
+            } else {
+                document.getElementById('user-view').classList.remove('hidden');
+                startListening();
+            }
+        }
+
+        function sendQuestion() {
+            const data = {
+                text: document.getElementById('q-text').value,
+                answers: [
+                    document.getElementById('ans1').value,
+                    document.getElementById('ans2').value,
+                    document.getElementById('ans3').value
+                ],
+                correct: document.getElementById('ans1').value
+            };
+            // რეალურ პროექტში აქ უნდა იყოს მონაცემთა ბაზაში ჩაწერა
+            localStorage.setItem('last_question', JSON.stringify(data));
+            alert("კითხვა "გაიგზავნა" (დაიმახსოვრა ბრაუზერმა)");
+        }
+
+        function startListening() {
+            setInterval(() => {
+                const q = JSON.parse(localStorage.getItem('last_question'));
+                if(q) {
+                    document.getElementById('active-question').classList.remove('hidden');
+                    document.getElementById('display-q').innerText = q.text;
+                    const btnContainer = document.getElementById('answer-buttons');
+                    btnContainer.innerHTML = '';
+                    q.answers.forEach(ans => {
+                        const btn = document.createElement('button');
+                        btn.innerText = ans;
+                        btn.onclick = () => alert(ans === q.correct ? "სწორია!" : "წააგე!");
+                        btnContainer.appendChild(btn);
+                    });
+                }
+            }, 3000);
+        }
+
+        // PWA-ს რეგისტრაცია
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
