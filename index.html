@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>გაჩითე</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ff0000">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; color: white; margin: 0; overflow-x: hidden; }
+        .header { background: #ff0000; padding: 15px; font-size: 26px; font-weight: bold; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3); }
+        .container { padding: 20px; max-width: 500px; margin: auto; }
+        
+        /* ვიდეოს სტილი */
+        .video-container { background: #000; width: 100%; border-radius: 15px; overflow: hidden; border: 2px solid #333; margin-bottom: 20px; position: relative; min-height: 250px; display: flex; align-items: center; justify-content: center; }
+        video { width: 100%; height: auto; display: block; }
+        .live-tag { position: absolute; top: 10px; left: 10px; background: red; padding: 4px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; animation: blink 1s infinite; }
+        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.4;} 100% {opacity: 1;} }
+
+        /* ფორმები და ღილაკები */
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: white; box-sizing: border-box; }
+        .btn { width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px; border: none; background: #ff0000; color: white; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        .btn:active { transform: scale(0.98); background: #cc0000; }
+        .btn-green { background: #28a745; }
+        
+        .hidden { display: none; }
+        
+        /* ვიქტორინის ბარათი */
+        .quiz-card { background: #1a1a1a; padding: 20px; border-radius: 15px; border-left: 5px solid #ff0000; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        
+        /* PWA ინსტრუქცია */
+        #pwa-install { background: #222; padding: 15px; border-top: 3px solid #ff0000; position: fixed; bottom: 0; width: 100%; left: 0; z-index: 2000; text-align: center; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="header">გაჩითე</div>
+
+<div class="container">
+    <div id="login-section">
+        <h2 style="margin-top: 50px;">მოგესალმებით</h2>
+        <p style="color: #888;">შედით სისტემაში შოუს დასაწყებად</p>
+        <input type="email" id="email" placeholder="იმეილი: gachite@gmail.com">
+        <button class="btn" onclick="login()">შესვლა</button>
+    </div>
+
+    <div id="admin-panel" class="hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>🔴 ადმინ პანელი</h3>
+            <span style="color: #888; font-size: 12px;">Admin Mode</span>
+        </div>
+        <div class="video-container">
+            <video id="admin-preview" autoplay playsinline muted></video>
+            <div id="no-video-msg">კამერა გამორთულია</div>
+        </div>
+        <button class="btn btn-green" onclick="startCamera()">🎥 ლაივში გასვლა (კამერა)</button>
+        
+        <div class="quiz-card">
+            <h4>დასვი კითხვა</h4>
+            <input type="text" id="q-text" placeholder="კითხვის ტექსტი">
+            <input type="text" id="ans1" placeholder="სწორი პასუხი">
+            <input type="text" id="ans2" placeholder="არასწორი პასუხი 1">
+            <input type="text" id="ans3" placeholder="არასწორი პასუხი 2">
+            <button class="btn" onclick="sendQuestion()">გაგზავნა ხალხთან</button>
+        </div>
+    </div>
+
+    <div id="user-view" class="hidden">
+        <div class="video-container">
+            <span class="live-tag">LIVE</span>
+            <video id="user-video" autoplay playsinline></video>
+            <div id="user-video-msg">ველოდებით სტრიმს...</div>
+        </div>
+        
+        <div id="active-question" class="quiz-card hidden">
+            <h3 id="display-q" style="margin-top: 0;"></h3>
+            <div id="answer-buttons"></div>
+        </div>
+    </div>
+</div>
+
+<div id="pwa-install">
+    <p>📲 გსურთ აპლიკაციის გადმოწერა?</p>
+    <p style="font-size: 12px; color: #aaa;">iOS: Share -> Add to Home Screen | Android: Menu -> Install</p>
+    <button onclick="document.getElementById('pwa-install').style.display='none'" style="background:none; border:none; color:red; cursor:pointer;">დახურვა</button>
+</div>
+
+<script>
+    function login() {
+        const email = document.getElementById('email').value.toLowerCase().trim();
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('pwa-install').classList.add('hidden');
+
+        if(email === 'gachite@gmail.com') {
+            document.getElementById('admin-panel').classList.remove('hidden');
+        } else {
+            document.getElementById('user-view').classList.remove('hidden');
+            listenForQuestions();
+        }
+    }
+
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+            document.getElementById('admin-preview').srcObject = stream;
+            document.getElementById('no-video-msg').classList.add('hidden');
+            alert("თქვენ ლაივში ხართ!");
+        } catch (err) {
+            alert("კამერაზე წვდომა ვერ მოხერხდა. შეამოწმეთ პარამეტრები.");
+        }
+    }
+
+    function sendQuestion() {
+        const q = {
+            text: document.getElementById('q-text').value,
+            options: [
+                document.getElementById('ans1').value,
+                document.getElementById('ans2').value,
+                document.getElementById('ans3').value
+            ].sort(() => Math.random() - 0.5),
+            correct: document.getElementById('ans1').value
+        };
+        localStorage.setItem('gachite_live_data', JSON.stringify(q));
+        alert("კითხვა გაიგზავნა!");
+    }
+
+    function listenForQuestions() {
+        setInterval(() => {
+            const data = JSON.parse(localStorage.getItem('gachite_live_data'));
+            if(data) {
+                document.getElementById('active-question').classList.remove('hidden');
+                document.getElementById('display-q').innerText = data.text;
+                const container = document.getElementById('answer-buttons');
+                container.innerHTML = '';
+                data.options.forEach(opt => {
+                    const b = document.createElement('button');
+                    b.className = "btn";
+                    b.innerText = opt;
+                    b.onclick = () => {
+                        if(opt === data.correct) {
+                            alert("სწორია! ✅");
+                            document.getElementById('active-question').classList.add('hidden');
+                        } else {
+                            alert("არასწორია! ❌");
+                        }
+                    };
+                    container.appendChild(b);
+                });
+            }
+        }, 2000);
+    }
+
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(() => console.log("PWA Active"));
+    }
+</script>
+
+</body>
+</html>
